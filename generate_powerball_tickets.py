@@ -38,7 +38,23 @@ class PowerballInput:
         soup = BeautifulSoup(response.text, "html.parser")
 
         jackpot_el = soup.find("span", class_="game-jackpot-number text-xxxl lh-1 text-center")
+        while not jackpot_el:
+            print("Retrying becuase 'None' was returned.")
+            time.sleep(2.5)
+            response = requests.get(url, headers=headers)
+            soup = BeautifulSoup(response.text, "html.parser")
+            jackpot_el = soup.find("span.game-jackpot-number.text-xxxl.lh-1.text-center")
 
-        print(jackpot_el)
+        jackpot_text = jackpot_el.text.strip()
+        jackpot_text = jackpot_text.replace("$","")
+        val, unit = jackpot_text.split(" ")
+
+        if unit.lower() == "million":
+            jackpot_value = float(val) * 1000000.00
+        if unit.lower() == "billion":
+            jackpot_value = float(val) * 1000000000.00
+        return int(jackpot_value)
+
+
 
  
