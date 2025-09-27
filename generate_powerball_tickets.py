@@ -21,8 +21,8 @@ class PowerballInput:
             else:
                 self.additional_inputs.append(user_response)
 
-    # Get powerball jackpot value
-    def get_powerball_jackpot(self):
+    # Return powerball page as BeautifulSoup
+    def powerball_site_scrape(self, tag, cls):
         headers = {
             "User-Agent": (
                 "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
@@ -37,15 +37,16 @@ class PowerballInput:
 
         soup = BeautifulSoup(response.text, "html.parser")
 
-        jackpot_el = soup.find("span", class_="game-jackpot-number text-xxxl lh-1 text-center")
-        while not jackpot_el:
-            print("Retrying becuase 'None' was returned.")
-            time.sleep(2.5)
-            response = requests.get(url, headers=headers)
-            soup = BeautifulSoup(response.text, "html.parser")
-            jackpot_el = soup.find("span.game-jackpot-number.text-xxxl.lh-1.text-center")
+        el = soup.find(tag, class_=cls)
 
-        jackpot_text = jackpot_el.text.strip()
+        while not el:
+            time.sleep(2)
+            el = soup.find(tag, class_=cls)
+        return el.text.strip()
+
+    # Get powerball jackpot value
+    def scrape_powerball_jackpot(self): 
+        jackpot_text = self.powerball_site_scrape("span", "game-jackpot-number text-xxxl lh-1 text-center")
         jackpot_text = jackpot_text.replace("$","")
         val, unit = jackpot_text.split(" ")
 
@@ -55,6 +56,16 @@ class PowerballInput:
             jackpot_value = float(val) * 1000000000.00
         return int(jackpot_value)
 
+    # Get last powerball drawn
+    def scrape_last_powerball(self):
+        powerball_text = self.powerball_site_scrape("div", "form-control col powerball item-powerball")
+        return int(powerball_text)
+        
+
+test = PowerballInput()
+
+print(test.scrape_powerball_jackpot())
+print(test.scrape_last_powerball())
 
 
  
