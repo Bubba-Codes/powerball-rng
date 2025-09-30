@@ -7,14 +7,14 @@ import time
 # Define powerball input class for entering custom input
 class PowerballInput:
     def __init__(self, initial_inputs=[]):
-        self.additional_inputs = [time.time()]
-        self.inputs = initial_inputs + self.additional_inputs
+        self.initial_inputs = initial_inputs
+        self.additional_inputs = [time.time(), self.scrape_powerball_jackpot(), self.scrape_last_powerball()]
 
     # Add additional inputs
     def add_inputs(self):
         done = False
         while not done:
-            user_response = input("Please enter additional inputs. Enter \"done\" when finished.")
+            user_response = input("Please enter additional inputs. Enter \"done\" when finished: ")
             if user_response.lower() == "done":
                print("Inputs received.", end="\n\n")
                done = True
@@ -34,13 +34,13 @@ class PowerballInput:
         url = "https://www.powerball.com/"
 
         response = requests.get(url, headers=headers)
-
         soup = BeautifulSoup(response.text, "html.parser")
 
         el = soup.find(tag, class_=cls)
-
         while not el:
             time.sleep(2)
+            response = requests.get(url, headers=headers)
+            soup = BeautifulSoup(response.text, "html.parser")
             el = soup.find(tag, class_=cls)
         return el.text.strip()
 
@@ -60,12 +60,21 @@ class PowerballInput:
     def scrape_last_powerball(self):
         powerball_text = self.powerball_site_scrape("div", "form-control col powerball item-powerball")
         return int(powerball_text)
+    
+    # Show list of inputs
+    def show_inputs_hash(self):
+        inputs = tuple(self.initial_inputs + self.additional_inputs)
+        print("The following inputs will be hashed into an integer seed.")
+        print(f"Inputs: {inputs}")
+        print(f"Hash: {hash(inputs)}")
         
 
 test = PowerballInput()
 
 print(test.scrape_powerball_jackpot())
 print(test.scrape_last_powerball())
+test.add_inputs()
+test.show_inputs_hash()
 
 
  
