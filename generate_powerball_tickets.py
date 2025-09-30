@@ -16,8 +16,9 @@ class PowerballInput:
         while not done:
             user_response = input("Please enter additional inputs. Enter \"done\" when finished: ")
             if user_response.lower() == "done":
-               print("Inputs received.", end="\n\n")
-               done = True
+                print()
+                print("Inputs received.", end="\n\n")
+                done = True
             else:
                 self.additional_inputs.append(user_response)
 
@@ -62,19 +63,55 @@ class PowerballInput:
         return int(powerball_text)
     
     # Show list of inputs
-    def show_inputs_hash(self):
+    def show_inputs(self):
         inputs = tuple(self.initial_inputs + self.additional_inputs)
         print("The following inputs will be hashed into an integer seed.")
         print(f"Inputs: {inputs}")
         print(f"Hash: {hash(inputs)}")
+        print()
+
+    # Return a hash of all current inputs
+    def get_hash(self):
+        inputs = tuple(self.initial_inputs + self.additional_inputs)
+        return hash(inputs)
         
+# Class for generating powerball tickets
+class PowerballTicket:
+    # Initialize with lucky hash for 
+    def __init__(self, luck_hash):
+        self.lucky_hash = luck_hash
 
-test = PowerballInput()
+    # Set seed for generating samples
+    def set_seed(self):
+        random.seed(self.lucky_hash)
+        print(f"Random seed set with lucky hash: {self.lucky_hash}", end="\n\n")
 
-print(test.scrape_powerball_jackpot())
-print(test.scrape_last_powerball())
-test.add_inputs()
-test.show_inputs_hash()
+    def generate_tickets(self, num_tickets=1):
+        def red(text):
+            return f"\x1b[91m{text}\x1b[0m"
+        
+        def white(text):
+            return f"\x1b[97m{text}\x1b[0m"
+        
+        if num_tickets < 1:
+            print("No tickets generated.")
+        else:
+            for _ in range(num_tickets):
+                white_balls = sorted(random.sample(range(1, 70), 5))
+                powerball = random.randint(1, 26)
+                print("Powerball ticket generated: ", end=" ")
+                for wb in white_balls:
+                    print(white(wb), end=" ")
+                print(red(powerball), end="\n\n")
 
+
+lucky_inputs = PowerballInput()
+
+lucky_inputs.add_inputs()
+
+lucky_hash = lucky_inputs.get_hash()
+
+lucky_rng = PowerballTicket(lucky_hash)
+lucky_rng.generate_tickets(num_tickets=5)
 
  
